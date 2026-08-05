@@ -33,9 +33,22 @@ yarn-error.log*
 # env files (can opt-in for committing if needed)
 .env*
 
-# vercel
+## vercel
 .vercel
 
-# typescript
+## AI tool skill folders (auto-installed, not project code)
+/.agents/
+/.claude/
+/.windsurf/
+
+## Private mentor notes
+/.mentor/
+
+## typescript
 *.tsbuildinfo
 next-env.d.ts
+
+/src/generated/prisma
+AGENTS.md
+.github/copilot-instructions.md
+AGENTS.md

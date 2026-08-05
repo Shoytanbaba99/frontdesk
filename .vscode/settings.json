@@ -12,5 +12,6 @@
         "dist": true
     },
     "typescript.tsdk": "node_modules/typescript/lib",
-    "terminal.integrated.shell.linux": "/bin/bash"
+    "terminal.integrated.shell.linux": "/bin/bash",
+    "cSpell.words": ["Supabase", "vercel"]
 }

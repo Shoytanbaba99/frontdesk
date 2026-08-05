@@ -48,7 +48,14 @@ yarn-error.log*
 *.tsbuildinfo
 next-env.d.ts
 
+# ai mentor & internal agent files
+.mentor/
+AGENTS.md
+CLAUDE.md
+.github/
+
+
 /src/generated/prisma
 AGENTS.md
 .github/copilot-instructions.md
-AGENTS.md
+

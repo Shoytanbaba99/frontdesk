@@ -26,15 +26,25 @@ export async function login(formData: FormData) {
     const result = loginSchema.safeParse(rawData);
 
     if (!result.success) {
-        redirect("/login?error=Invalid email or password");
+        const firstError = result.error.issues[0].message;
+        redirect(`/login?error=${encodeURIComponent(firstError)}`);
     }
+
     const supabase = await createClient();
     const { error } = await supabase.auth.signInWithPassword(result.data);
     if (error) {
-        redirect("/login?error=Invalid email or password");
+        redirect(`/login?error=${encodeURIComponent(error.message)}`);
     }
+
     revalidatePath("/", "layout");
     redirect("/admin");
+}
+
+export async function logout() {
+    const supabase = await createClient();
+    await supabase.auth.signOut();
+    revalidatePath("/", "layout");
+    redirect("/login");
 }
 
 export async function signup(formData: FormData) {

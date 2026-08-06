@@ -17,7 +17,7 @@ const blockSchema = z.object({
     description: z.string().optional(),
     price_dollars: z.coerce.number().min(0, "Price must be a positive number"),
     category: z.string().min(1, "Category must be at least 1 character long"),
-    image_url: z.string().url("Invalid URL").optional(),
+    image_url: z.string().url("Invalid image URL").optional().or(z.literal("")),
 });
 
 export async function updateProfileSettings(formData: FormData) {
@@ -76,16 +76,15 @@ export async function createBlock(formData: FormData) {
     }
 
     const price_cents = Math.round(result.data.price_dollars * 100);
+    const imageUrl = result.data.image_url && result.data.image_url.trim() !== "" ? result.data.image_url : null;
 
     const { error } = await supabase.from("blocks").insert({
         user_id: user.id,
         title: result.data.title,
-        description: result.data.description,
+        description: result.data.description || null,
         price_cents: price_cents,
         category: result.data.category,
-        image_url: result.data.image_url,
-        created_at: new Date().toISOString(),
-        updated_at: new Date().toISOString(),
+        image_url: imageUrl,
     });
     if (error) {
         redirect(`/admin?error=${encodeURIComponent(error.message)}`);

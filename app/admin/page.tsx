@@ -1,6 +1,7 @@
 import BlockCard from "@/components/admin/BlockCard";
 import CreateBlockForm from "@/components/admin/CreateBlockForm";
 import ProfileSettingsForm from "@/components/admin/ProfileSettingsForm";
+import { logout } from "@/app/login/actions";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
 
@@ -40,13 +41,23 @@ export default async function AdminPage({
                         {profile?.username})
                     </p>
                 </div>
-                <a
-                    href={`/${profile?.username}`}
-                    target="_blank"
-                    className="px-4 py-2 bg-gray-900 text-white rounded text-sm font-medium hover:bg-gray-800"
-                >
-                    View Public Profile ↗
-                </a>
+                <div className="flex items-center gap-2">
+                    <a
+                        href={`/${profile?.username}`}
+                        target="_blank"
+                        className="px-4 py-2 bg-gray-900 text-white rounded text-sm font-medium hover:bg-gray-800"
+                    >
+                        View Public Profile ↗
+                    </a>
+                    <form action={logout}>
+                        <button
+                            type="submit"
+                            className="px-4 py-2 border border-gray-300 text-gray-700 rounded text-sm font-medium hover:bg-gray-100"
+                        >
+                            Log Out
+                        </button>
+                    </form>
+                </div>
             </div>
 
             {error && (

@@ -5,8 +5,15 @@ import { redirect } from "next/navigation";
 import { z } from "zod";
 
 const profileUpdateSchema = z.object({
+    full_name: z.string().min(1, "Name is required").optional().or(z.literal("")),
     status: z.enum(["AVAILABLE", "BUSY", "OFFLINE"]),
     theme_color: z.string().regex(/^#([0-9A-Fa-f]{6})$/, "Invalid hex color code"),
+    bio: z.string().optional(),
+    avatar_url: z.string().url().optional().or(z.literal("")),
+    cover_image_url: z.string().url().optional().or(z.literal("")),
+    github_url: z.string().url().optional().or(z.literal("")),
+    x_url: z.string().url().optional().or(z.literal("")),
+    website_url: z.string().url().optional().or(z.literal("")),
 });
 
 const blockSchema = z.object({
@@ -30,6 +37,13 @@ export async function updateProfileSettings(formData: FormData) {
     }
 
     const result = profileUpdateSchema.safeParse({
+        full_name: formData.get("full_name") || "",
+        bio: formData.get("bio") || "",
+        avatar_url: formData.get("avatar_url") || "",
+        cover_image_url: formData.get("cover_image_url") || "",
+        github_url: formData.get("github_url") || "",
+        x_url: formData.get("x_url") || "",
+        website_url: formData.get("website_url") || "",
         status: formData.get("status"),
         theme_color: formData.get("theme_color"),
     });
@@ -41,6 +55,13 @@ export async function updateProfileSettings(formData: FormData) {
     const { error } = await supabase
         .from("profiles")
         .update({
+            full_name: result.data.full_name,
+            bio: result.data.bio || null,
+            avatar_url: result.data.avatar_url || null,
+            cover_image_url: result.data.cover_image_url || null,
+            github_url: result.data.github_url || null,
+            x_url: result.data.x_url || null,
+            website_url: result.data.website_url || null,
             status: result.data.status,
             theme_color: result.data.theme_color,
             updated_at: new Date().toISOString(),
@@ -118,13 +139,19 @@ export async function toggleBlockActive(blockId: string, currentStatus: boolean)
     revalidatePath("/admin");
 }
 
-export async function deleteBlock(blockId: string) {
+export async function deleteBlock(blockIdOrFormData: string | FormData) {
     const supabase = await createClient();
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
-    if (!user) redirect("/login");
+    if (!user) {
+        redirect("/login?error=You must be logged in to delete blocks");
+    }
+
+    const blockId = typeof blockIdOrFormData === "string"
+        ? blockIdOrFormData
+        : (blockIdOrFormData.get("block_id") as string);
 
     const { error } = await supabase
         .from("blocks")
@@ -137,4 +164,30 @@ export async function deleteBlock(blockId: string) {
     }
 
     revalidatePath("/admin");
+    redirect("/admin?success=Block deleted successfully");
+}
+
+export async function toggleBlockStatus(formData: FormData) {
+    const supabase = await createClient();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    if (!user) redirect("/login");
+
+    const blockId = formData.get("block_id") as string;
+    const currentStatus = formData.get("current_status") === "true";
+
+    const { error } = await supabase
+        .from("blocks")
+        .update({ is_active: !currentStatus, updated_at: new Date().toISOString() })
+        .eq("id", blockId)
+        .eq("user_id", user.id);
+
+    if (error) {
+        redirect(`/admin?error=${encodeURIComponent(error.message)}`);
+    }
+
+    revalidatePath("/admin");
+    redirect("/admin?success=Block status updated");
 }

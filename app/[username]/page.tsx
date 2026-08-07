@@ -1,4 +1,5 @@
 import RequestModal from "@/components/public/RequestModal";
+import ServicesList from "@/components/public/ServicesList";
 import { createClient } from "@/utils/supabase/server";
 import Image from "next/image";
 import Link from "next/link";
@@ -78,12 +79,25 @@ export default async function PublicProfile({ params, searchParams }: PublicProf
                 </div>
             )}
 
-            <div
-                className="h-32 w-full transition-colors"
-                style={{ backgroundColor: themeColor }}
-            />
+            {/* Cover Banner */}
+            <div className="relative h-48 md:h-64 w-full bg-gray-900 overflow-hidden">
+                {profile.cover_image_url ? (
+                    <Image
+                        src={profile.cover_image_url}
+                        alt="Cover Banner"
+                        fill
+                        priority
+                        className="object-cover opacity-90"
+                    />
+                ) : (
+                    <div
+                        className="w-full h-full transition-colors"
+                        style={{ backgroundColor: themeColor }}
+                    />
+                )}
+            </div>
 
-            <div className="max-w-4xl mx-auto px-4 -mt-12 space-y-8">
+            <div className="max-w-4xl mx-auto px-4 -mt-16 relative z-10 space-y-8">
                 {/* Alert Banners */}
                 {error && (
                     <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg shadow-sm">
@@ -95,13 +109,34 @@ export default async function PublicProfile({ params, searchParams }: PublicProf
                         {success}
                     </div>
                 )}
-                <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8 space-y-4">
-                    <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-                        <div>
-                            <h1 className="text-3xl font-extrabold text-gray-900">
-                                {profile.full_name}
-                            </h1>
-                            <p className="text-sm font-medium text-gray-500">@{profile.username}</p>
+                <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8 space-y-6">
+                    <div className="flex flex-col md:flex-row justify-between items-start md:items-end gap-4 border-b pb-6">
+                        <div className="flex items-end gap-4">
+                            {/* Avatar Profile Picture */}
+                            <div className="relative w-24 h-24 md:w-28 md:h-28 rounded-full border-4 border-white shadow-md overflow-hidden bg-gray-100 flex-shrink-0 -mt-16 md:-mt-20">
+                                {profile.avatar_url ? (
+                                    <Image
+                                        src={profile.avatar_url}
+                                        alt={profile.full_name || profile.username}
+                                        fill
+                                        className="object-cover"
+                                    />
+                                ) : (
+                                    <div
+                                        className="w-full h-full flex items-center justify-center text-3xl font-bold text-white uppercase"
+                                        style={{ backgroundColor: themeColor }}
+                                    >
+                                        {(profile.full_name || profile.username).slice(0, 2)}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div>
+                                <h1 className="text-2xl md:text-3xl font-extrabold text-gray-900">
+                                    {profile.full_name}
+                                </h1>
+                                <p className="text-sm font-medium text-gray-500">@{profile.username}</p>
+                            </div>
                         </div>
 
                         <div className="flex items-center gap-3">
@@ -115,7 +150,7 @@ export default async function PublicProfile({ params, searchParams }: PublicProf
                                 {currentStatus.label}
                             </div>
 
-                            <RequestModal providerId={profile.id} themeColor={themeColor} />
+                            <RequestModal providerId={profile.id} providerUsername={profile.username} themeColor={themeColor} />
                         </div>
                     </div>
 
@@ -124,67 +159,31 @@ export default async function PublicProfile({ params, searchParams }: PublicProf
                             {profile.bio}
                         </p>
                     )}
+
+                    {(profile.github_url || profile.x_url || profile.website_url) && (
+                        <div className="flex gap-2 pt-2">
+                            {profile.github_url && (
+                                <a href={profile.github_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold hover:bg-gray-200 transition">
+                                    GitHub ↗
+                                </a>
+                            )}
+                            {profile.x_url && (
+                                <a href={profile.x_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold hover:bg-gray-200 transition">
+                                    X / Twitter ↗
+                                </a>
+                            )}
+                            {profile.website_url && (
+                                <a href={profile.website_url} target="_blank" rel="noopener noreferrer" className="px-3 py-1.5 bg-gray-100 text-gray-700 rounded-full text-xs font-semibold hover:bg-gray-200 transition">
+                                    Website ↗
+                                </a>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-4">
                     <h2 className="text-xl font-bold text-gray-900">Services & Offerings</h2>
-
-                    {blocks?.length === 0 ? (
-                        <div className="bg-white rounded-xl p-8 text-center text-gray-500 border">
-                            No active services currently listed. Check back soon!
-                        </div>
-                    ) : (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            {blocks?.map((block) => (
-                                <div
-                                    key={block.id}
-                                    className="bg-white rounded-xl p-6 border shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4"
-                                >
-                                    <div className="space-y-2">
-                                        {block.image_url && (
-                                            <div className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100 mb-3">
-                                                <Image
-                                                    src={block.image_url}
-                                                    alt={block.title}
-                                                    fill
-                                                    sizes="(max-width: 768px) 100vw, 50vw"
-                                                    className="object-cover"
-                                                />
-                                            </div>
-                                        )}
-
-                                        <div className="flex justify-between items-start">
-                                            <h3 className="font-bold text-lg text-gray-900">
-                                                {block.title}
-                                            </h3>
-                                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
-                                                {block.category}
-                                            </span>
-                                        </div>
-
-                                        {block.description && (
-                                            <p className="text-sm text-gray-600 line-clamp-3">
-                                                {block.description}
-                                            </p>
-                                        )}
-                                    </div>
-
-                                    <div className="flex justify-between items-center border-t pt-4">
-                                        <span className="text-xl font-extrabold text-gray-900">
-                                            ${(block.price_cents / 100).toFixed(2)}
-                                        </span>
-
-                                        <RequestModal
-                                            providerId={profile.id}
-                                            blockId={block.id}
-                                            blockTitle={block.title}
-                                            themeColor={themeColor}
-                                        />
-                                    </div>
-                                </div>
-                            ))}
-                        </div>
-                    )}
+                    <ServicesList blocks={blocks || []} profileId={profile.id} providerUsername={profile.username} themeColor={themeColor} />
                 </div>
             </div>
         </main>

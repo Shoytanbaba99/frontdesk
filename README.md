@@ -2,6 +2,8 @@
 
 FrontDesk is a solo service provider platform built with Next.js 16 (App Router), Supabase, and Tailwind CSS. It enables freelancers, consultants, and service providers to manage real-time availability, display service blocks, and capture structured booking requests.
 
+**🌐 Live Production Demo:** [https://frontdesk-lac.vercel.app](https://frontdesk-lac.vercel.app)
+
 ---
 
 ## 📸 Application Showcase

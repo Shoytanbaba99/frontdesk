@@ -1,9 +1,11 @@
-import Link from "next/link";
 import { createClient } from "@/utils/supabase/server";
+import Link from "next/link";
 
 export default async function HomePage() {
     const supabase = await createClient();
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
 
     let profile = null;
     if (user) {
@@ -23,11 +25,13 @@ export default async function HomePage() {
                 </span>
 
                 <h1 className="text-4xl md:text-6xl font-extrabold text-gray-900 tracking-tight">
-                    Manage your services & bookings with <span className="text-blue-600">FrontDesk</span>
+                    Manage your services & bookings with{" "}
+                    <span className="text-blue-600">FrontDesk</span>
                 </h1>
 
                 <p className="text-lg text-gray-600 leading-relaxed">
-                    Share your real-time availability, showcase service offerings, and capture structured booking requests into a unified provider inbox.
+                    Share your real-time availability, showcase service offerings, and capture
+                    structured booking requests into a unified provider inbox.
                 </p>
 
                 <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">

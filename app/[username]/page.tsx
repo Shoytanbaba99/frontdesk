@@ -1,14 +1,23 @@
-/* eslint-disable @next/next/no-img-element */
+import RequestModal from "@/components/public/RequestModal";
 import { createClient } from "@/utils/supabase/server";
+import Image from "next/image";
+import Link from "next/link";
 import { notFound } from "next/navigation";
 
 interface PublicProfileProp {
     params: Promise<{ username: string }>;
+    searchParams: Promise<{ error?: string; success?: string }>;
 }
 
-export default async function PublicProfile({ params }: PublicProfileProp) {
+export default async function PublicProfile({ params, searchParams }: PublicProfileProp) {
     const { username } = await params;
+    const { error, success } = await searchParams;
     const supabase = await createClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
     const { data: profile } = await supabase
         .from("profiles")
         .select("*")
@@ -18,6 +27,8 @@ export default async function PublicProfile({ params }: PublicProfileProp) {
     if (!profile) {
         notFound();
     }
+
+    const isOwner = user?.id === profile.id;
 
     const { data: blocks } = await supabase
         .from("blocks")
@@ -50,18 +61,40 @@ export default async function PublicProfile({ params }: PublicProfileProp) {
     const currentStatus =
         statusConfig[profile.status as keyof typeof statusConfig] || statusConfig.AVAILABLE;
 
-    const themeColor = profile.theme_color || "#3B82F6"; // Default to blue if no theme color is set
+    const themeColor = profile.theme_color || "#3B82F6";
 
     return (
         <main className="min-h-screen bg-gray-50 pb-16">
-            {/* Custom Theme Accent Banner Header */}
+            {/* Owner Navigation Bar */}
+            {isOwner && (
+                <div className="bg-gray-900 text-white text-xs py-2 px-4 flex justify-between items-center font-medium">
+                    <span>Previewing your public profile (@{profile.username})</span>
+                    <Link
+                        href="/admin"
+                        className="bg-blue-600 px-3 py-1 rounded text-white hover:bg-blue-700 font-semibold"
+                    >
+                        ← Back to Admin Dashboard
+                    </Link>
+                </div>
+            )}
+
             <div
                 className="h-32 w-full transition-colors"
                 style={{ backgroundColor: themeColor }}
             />
 
             <div className="max-w-4xl mx-auto px-4 -mt-12 space-y-8">
-                {/* Profile Card Header */}
+                {/* Alert Banners */}
+                {error && (
+                    <div className="p-4 bg-red-50 text-red-700 border border-red-200 rounded-lg shadow-sm">
+                        {error}
+                    </div>
+                )}
+                {success && (
+                    <div className="p-4 bg-green-50 text-green-700 border border-green-200 rounded-lg shadow-sm">
+                        {success}
+                    </div>
+                )}
                 <div className="bg-white rounded-xl shadow-sm border p-6 md:p-8 space-y-4">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                         <div>
@@ -71,15 +104,18 @@ export default async function PublicProfile({ params }: PublicProfileProp) {
                             <p className="text-sm font-medium text-gray-500">@{profile.username}</p>
                         </div>
 
-                        {/* Status Badge */}
-                        <div
-                            className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold
-  ${currentStatus.bg} ${currentStatus.text} border border-current/20`}
-                        >
-                            <span
-                                className={`h-2.5 w-2.5 rounded-full ${currentStatus.color} animate-pulse`}
-                            />
-                            {currentStatus.label}
+                        <div className="flex items-center gap-3">
+                            <div
+                                className={`inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-xs font-semibold
+      ${currentStatus.bg} ${currentStatus.text} border border-current/20`}
+                            >
+                                <span
+                                    className={`h-2.5 w-2.5 rounded-full ${currentStatus.color} animate-pulse`}
+                                />
+                                {currentStatus.label}
+                            </div>
+
+                            <RequestModal providerId={profile.id} themeColor={themeColor} />
                         </div>
                     </div>
 
@@ -90,7 +126,6 @@ export default async function PublicProfile({ params }: PublicProfileProp) {
                     )}
                 </div>
 
-                {/* Service Blocks Catalog */}
                 <div className="space-y-4">
                     <h2 className="text-xl font-bold text-gray-900">Services & Offerings</h2>
 
@@ -103,21 +138,17 @@ export default async function PublicProfile({ params }: PublicProfileProp) {
                             {blocks?.map((block) => (
                                 <div
                                     key={block.id}
-                                    className="bg-white rounded-xl p-6 border shadow-sm hover:shadow-md transition flex
-  flex-col justify-between space-y-4"
+                                    className="bg-white rounded-xl p-6 border shadow-sm hover:shadow-md transition flex flex-col justify-between space-y-4"
                                 >
                                     <div className="space-y-2">
                                         {block.image_url && (
-                                            /* Reserved dimensions (aspect ratio) to prevent CLS layout shift */
-                                            <div
-                                                className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100
-  mb-3"
-                                            >
-                                                <img
+                                            <div className="relative w-full h-40 rounded-lg overflow-hidden bg-gray-100 mb-3">
+                                                <Image
                                                     src={block.image_url}
                                                     alt={block.title}
-                                                    className="w-full h-full object-cover"
-                                                    loading="lazy"
+                                                    fill
+                                                    sizes="(max-width: 768px) 100vw, 50vw"
+                                                    className="object-cover"
                                                 />
                                             </div>
                                         )}
@@ -126,10 +157,7 @@ export default async function PublicProfile({ params }: PublicProfileProp) {
                                             <h3 className="font-bold text-lg text-gray-900">
                                                 {block.title}
                                             </h3>
-                                            <span
-                                                className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100
-  text-gray-600"
-                                            >
+                                            <span className="text-xs font-semibold px-2.5 py-1 rounded-full bg-gray-100 text-gray-600">
                                                 {block.category}
                                             </span>
                                         </div>
@@ -146,13 +174,12 @@ export default async function PublicProfile({ params }: PublicProfileProp) {
                                             ${(block.price_cents / 100).toFixed(2)}
                                         </span>
 
-                                        <button
-                                            className="px-4 py-2 text-white text-sm font-semibold rounded-lg shadow-sm
-  transition hover:opacity-90"
-                                            style={{ backgroundColor: themeColor }}
-                                        >
-                                            Request Service
-                                        </button>
+                                        <RequestModal
+                                            providerId={profile.id}
+                                            blockId={block.id}
+                                            blockTitle={block.title}
+                                            themeColor={themeColor}
+                                        />
                                     </div>
                                 </div>
                             ))}

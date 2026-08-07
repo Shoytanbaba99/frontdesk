@@ -4,6 +4,7 @@ import ProfileSettingsForm from "@/components/admin/ProfileSettingsForm";
 import { logout } from "@/app/login/actions";
 import { createClient } from "@/utils/supabase/server";
 import { redirect } from "next/navigation";
+import Link from "next/link";
 
 export default async function AdminPage({
     searchParams,
@@ -42,6 +43,12 @@ export default async function AdminPage({
                     </p>
                 </div>
                 <div className="flex items-center gap-2">
+                    <Link
+                        href="/admin/inbox"
+                        className="px-4 py-2 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700"
+                    >
+                        📬 Inbox
+                    </Link>
                     <a
                         href={`/${profile?.username}`}
                         target="_blank"

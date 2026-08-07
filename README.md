@@ -2,7 +2,8 @@
 
 FrontDesk is a solo service provider platform built with Next.js 16 (App Router), Supabase, and Tailwind CSS. It enables freelancers, consultants, and service providers to manage real-time availability, display service blocks, and capture structured booking requests.
 
-**🌐 Live Production Demo:** [https://frontdesk-lac.vercel.app](https://frontdesk-lac.vercel.app)
+**🌐 Live Production Demo:** [https://frontdesk-lac.vercel.app](https://frontdesk-lac.vercel.app)  
+**📰 Engineering Write-ups:** [Dev.to Article ↗](https://dev.to/shoytanbaba99/escaping-tutorial-hell-building-frontdesk-112n) · [Hashnode Post-Mortem ↗](https://hashnode.com/edit/cmsjg36hi00000aktfo0idh89)
 
 ---
 
@@ -23,6 +24,7 @@ FrontDesk is a solo service provider platform built with Next.js 16 (App Router)
 
 - **Framework:** Next.js 16 (App Router, React 19, Server Actions)
 - **Database & Auth:** Supabase (`@supabase/ssr`, PostgreSQL, Row Level Security)
+- **Rate Limiting:** Upstash Redis (`@upstash/ratelimit`, Sliding-window algorithm)
 - **Styling:** Tailwind CSS (Vanilla CSS variable tokens)
 - **Validation:** Zod
 - **Type Safety:** TypeScript
@@ -46,6 +48,7 @@ FrontDesk is a solo service provider platform built with Next.js 16 (App Router)
   - High-converting cover image banner and overlapping profile avatar.
   - Interactive category filter pills and live title search bar.
   - Accessible modal dialog for submitting structured service booking requests.
+  - Application-level rate limiting via Upstash Redis sliding-window algorithm protecting public request submission endpoints from spam and storage bloat.
 
 ---
 
@@ -125,7 +128,7 @@ GRANT DELETE ON public.requests TO authenticated;
 
 1. **Clone the repository:**
    ```bash
-   git clone https://github.com/your-username/frontdesk.git
+   git clone https://github.com/Shoytanbaba99/frontdesk.git
    cd frontdesk
    ```
 
@@ -135,13 +138,31 @@ GRANT DELETE ON public.requests TO authenticated;
    ```
 
 3. **Configure Environment Variables:**
-   Create a `.env.local` file in the root directory:
-   ```env
-   NEXT_PUBLIC_SUPABASE_URL=https://your-supabase-project.supabase.co
-   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+   Copy the example environment file:
+   ```bash
+   cp .env.example .env.local
    ```
 
-4. **Run the development server:**
+   Populate `.env.local` with your Supabase and Upstash Redis credentials:
+   ```env
+   # Supabase Cloud Credentials
+   NEXT_PUBLIC_SUPABASE_URL=https://your-project-id.supabase.co
+   NEXT_PUBLIC_SUPABASE_ANON_KEY=your-supabase-anon-key
+
+   # Upstash Redis Credentials (Rate Limiting)
+   UPSTASH_REDIS_REST_URL=https://your-redis-database.upstash.io
+   UPSTASH_REDIS_REST_TOKEN=your-upstash-rest-token
+   ```
+
+4. **Apply Database Migrations:**
+   Using Supabase CLI or SQL Editor:
+   ```bash
+   # Apply migration using Supabase CLI
+   npx supabase db push
+   ```
+   *(Or copy the SQL script from `supabase/migrations/20260808000000_init_frontdesk_schema.sql` into your Supabase SQL Editor).*
+
+5. **Run the development server:**
    ```bash
    npm run dev
    ```

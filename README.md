@@ -4,6 +4,19 @@ FrontDesk is a solo service provider platform built with Next.js 16 (App Router)
 
 ---
 
+## 📸 Application Showcase
+
+### Public Provider Profile Page (`/[username]`)
+![Public Provider Profile](assets/public_profile.png)
+
+### Provider Dashboard & Profile Settings (`/admin`)
+![Provider Dashboard Settings](assets/admin_dashboard_settings.png)
+
+### Service Block Management & Status Controls (`/admin`)
+![Service Block Management](assets/admin_dashboard_services.png)
+
+---
+
 ## 🛠️ Tech Stack
 
 - **Framework:** Next.js 16 (App Router, React 19, Server Actions)
